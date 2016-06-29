@@ -233,16 +233,22 @@ class ValidateWikiLinks():
         self._print_error_log(error_log)
 
 
+def help():
+    print 'Usage ./wiki_links_validator.py -d <home_dir> -m <true/flase>\n\n'\
+          '   -d, --home_dir               wiki git repo directory\n'\
+          '   -m, --mail                   send mail to commiter <true/false>'
+
+
 def main(argv):
     home_dir, should_send_mail = '', ''
     try:
         opts, args = getopt.getopt(argv, "d:m:", ["home_dir=", "mail="])
     except getopt.GetoptError:
-        print 'gerrit.py -d <home_dir> -m <true/false>'
+        help()
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print 'gerrit.py -d <home_dir> -m <true/false>'
+            help()
             sys.exit()
         elif opt in ("-d", "--home_dir"):
             home_dir = arg
