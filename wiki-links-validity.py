@@ -16,20 +16,17 @@ from urlparse import urlparse
 
 class ValidateWikiLinks():
 
-    def __init__(self, home_dir, should_send_mail):
-        self._init_conf(home_dir, should_send_mail)
+    def __init__(self, home_dir, should_send_mail, log_dir):
+        self._init_conf(home_dir, should_send_mail, log_dir)
         self.validate_links()
 
-    def _init_conf(self, home_dir, should_send_mail):
+    def _init_conf(self, home_dir, should_send_mail, log_dir):
         # Get all configuration values
         configParser = ConfigParser.RawConfigParser()
         configFilePath = 'conf/wiki.conf'
         configParser.read(configFilePath)
-        if (home_dir):
-            self.home_dir = home_dir
-        else:
-            self.home_dir = configParser.get(
-                'wiki-links-validator', 'HOME_DIR')
+        self.home_dir = (home_dir if home_dir
+        else configParser.get('wiki-links-validator', 'HOME_DIR'))
         self.file_prefix = configParser.get(
             'wiki-links-validator', 'FILE_PREFIX')
         http_pattern = configParser.get(
@@ -40,14 +37,10 @@ class ValidateWikiLinks():
             'wiki-links-validator', 'INVALID_HTTP_CODES')
         self.http_url_whitelist = configParser.get(
             'wiki-links-validator', 'URL_WHITELIST').split(',')
-        if should_send_mail:
-            self.should_send_mail = should_send_mail
-        else:
-            self.should_send_mail = configParser.get(
-                'wiki-links-validator', 'SEND_MAIL')
-        self.debug_log = configParser.get(
-            'wiki-links-validator', 'DEBUG_LOG')
-        self.rot_links_log = configParser.get(
+        self.should_send_mail = (should_send_mail if should_send_mail
+            else configParser.get('wiki-links-validator', 'SEND_MAIL'))
+        self.debug_log = configParser.get('wiki-links-validator', 'DEBUG_LOG')
+        self.rot_links_log = log_dir if log_dir else configParser.get(
             'wiki-links-validator', 'ROT_LINKS_LOG')
 
         # pre-configured yes/no answer to map user answers.
@@ -234,15 +227,16 @@ class ValidateWikiLinks():
 
 
 def help():
-    print 'Usage ./wiki_links_validator.py -d <home_dir> -m <true/flase>\n\n'\
-          '   -d, --home_dir               wiki git repo directory\n'\
-          '   -m, --mail                   send mail to commiter <true/false>'
+    print 'Usage ./wiki_links_validator.py -d <dir_home> -m <true/flase> -l <log_dir>\n\n'\
+          '   -d, --dir_home               wiki git repo directory\n'\
+          '   -m, --mail                   send mail to commiter <true/false>\n'\
+          '   -l, --log_dir                wiki report log file location'
 
 
 def main(argv):
-    home_dir, should_send_mail = '', ''
+    dir_home, should_send_mail, log_dir = '', '', ''
     try:
-        opts, args = getopt.getopt(argv, "d:m:", ["home_dir=", "mail="])
+        opts, args = getopt.getopt(argv, "d:m:l:", ["dir_home=", "mail=", "log_dir="])
     except getopt.GetoptError:
         help()
         sys.exit(2)
@@ -250,15 +244,17 @@ def main(argv):
         if opt == '-h':
             help()
             sys.exit()
-        elif opt in ("-d", "--home_dir"):
-            home_dir = arg
+        elif opt in ("-d", "--dir_home"):
+            dir_home = arg
         elif opt in ("-m", "--mail"):
             if arg == 'true':
                 should_send_mail = 'True'
             else:
                 should_send_mail = 'False'
+        elif opt in ("-l", "--log_dir"):
+            log_dir = arg
 
-    ValidateWikiLinks(home_dir, should_send_mail)
+    ValidateWikiLinks(dir_home, should_send_mail, log_dir)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
