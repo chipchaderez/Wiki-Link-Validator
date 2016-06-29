@@ -26,7 +26,8 @@ class ValidateWikiLinks():
         configFilePath = 'conf/wiki.conf'
         configParser.read(configFilePath)
         self.home_dir = (home_dir if home_dir
-        else configParser.get('wiki-links-validator', 'HOME_DIR'))
+                         else configParser.get(
+                             'wiki-links-validator', 'HOME_DIR'))
         self.file_prefix = configParser.get(
             'wiki-links-validator', 'FILE_PREFIX')
         http_pattern = configParser.get(
@@ -38,7 +39,8 @@ class ValidateWikiLinks():
         self.http_url_whitelist = configParser.get(
             'wiki-links-validator', 'URL_WHITELIST').split(',')
         self.should_send_mail = (should_send_mail if should_send_mail
-            else configParser.get('wiki-links-validator', 'SEND_MAIL'))
+                                 else configParser.get(
+                                     'wiki-links-validator', 'SEND_MAIL'))
         self.debug_log = configParser.get('wiki-links-validator', 'DEBUG_LOG')
         self.rot_links_log = log_dir if log_dir else configParser.get(
             'wiki-links-validator', 'ROT_LINKS_LOG')
@@ -227,16 +229,18 @@ class ValidateWikiLinks():
 
 
 def help():
-    print 'Usage ./wiki_links_validator.py -d <dir_home> -m <true/flase> -l <log_dir>\n\n'\
-          '   -d, --dir_home               wiki git repo directory\n'\
-          '   -m, --mail                   send mail to commiter <true/false>\n'\
-          '   -l, --log_dir                wiki report log file location'
+    print 'Usage ./wiki_links_validator.py -d <dir_home>'\
+          ' -m <true/flase> -l <log_dir>\n\n'\
+          '   -d, --dir_home             wiki git repo directory\n'\
+          '   -m, --mail                 send mail to commiter <true/false>\n'\
+          '   -l, --log_dir              wiki report log file location'
 
 
 def main(argv):
     dir_home, should_send_mail, log_dir = '', '', ''
     try:
-        opts, args = getopt.getopt(argv, "d:m:l:", ["dir_home=", "mail=", "log_dir="])
+        opts, args = getopt.getopt(argv, "d:m:l:",
+                                   ["dir_home=", "mail=", "log_dir="])
     except getopt.GetoptError:
         help()
         sys.exit(2)
