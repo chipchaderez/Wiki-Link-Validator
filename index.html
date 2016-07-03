@@ -1,130 +1,144 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Wiki Links Validator by chipchaderez</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <style>
-      .outputTextarea {
-        resize: none;
-        width: 100%;
-        height: 100%;
-        border-radius: 5px;
+<head>
+  <meta charset="UTF-8">
+  <title>Wiki Links Validator by chipchaderez</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  <style>
+    .outputTextarea {
+      resize: none;
+      width: 100%;
+      height: 100%;
+      border-radius: 5px;
+    }
+
+    .outputPanel {
+      position: fixed;
+      display: none;
+      top: 300px;
+      height: 600px;
+      width: 1200px;
+      left: 350px;
+      border: 3px black solid;
+      border-radius: 10px;
+    }
+
+    button[disabled] {
+      color: #c0c0c0;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<section class="page-header">
+  <h1 class="project-name">Wiki Links Validator</h1>
+  <h1>Enter the wiki repo you want to scan:</h1>
+  <div style="color:black;">
+    <input id="git_repo" name="git_repo" placeholder="https://github.com/oVirt/ovirt-site" size="35">
+    <button id="scanButton" onclick="call_wiki_links()">Scan</button>
+    <div id="outputPanel" class="outputPanel">
+      <h3 style="position: absolute; right: 20px; top: -15px;">
+        <label style="cursor: pointer;" onclick="hideOutputPanel()">X</label>
+      </h3>
+      <textarea id="outputTextarea" title="Output" class="outputTextarea"></textarea>
+    </div>
+    <h2 class="project-tagline"></h2>
+  </div>
+</section>
+<body>
+<script type="text/javascript">
+  var baseURL = "https://wiki-link-validator-chipchaderez.c9users.io:8081";
+  var gitRepo = "https://github.com/oVirt/ovirt-site";
+  var interval;
+  var timestamp;
+
+  var outputPanel = document.getElementById('outputPanel');
+  var outputTextarea = document.getElementById('outputTextarea');
+  var scanButton = document.getElementById('scanButton');
+
+  function call_wiki_links() {
+    outputPanel.style.display = 'block';
+    outputTextarea.value = "Scanning...";
+    scanButton.disabled = true;
+
+    gitRepo = document.getElementById('git_repo').value || gitRepo;
+    gitRepo = btoa(gitRepo);
+    timestamp = Date.now();
+
+    var xmlhttp = new XMLHttpRequest();
+    var url = baseURL + "/validate/" + gitRepo + "?timestamp=" + timestamp;
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4 && xmlhttp.status != 0) {
+        if (xmlhttp.status != 200) {
+          outputTextarea.value = "Error: " + xmlhttp.responseText;
+          return;
+        }
+        startInterval();
       }
+    };
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+  }
 
-      .outputPanel {
-        position: fixed;
-        display: none;
-        top: 300px;
-        height: 600px;
-        width: 1200px;
-        left: 350px;
-        border: 3px black solid;
-        border-radius: 10px;
-      }
-    </style>
-  </head>
-    <section class="page-header">
-      <h1 class="project-name">Wiki Links Validator</h1>
-      <h1>Enter the wiki repo you want to scan:</h1>
-      <div style="color:black;">
-        <input id="git_repo" name="git_repo" placeholder="https://github.com/oVirt/ovirt-site" size="35">
-        <button onclick="call_wiki_links()">Scan</button>
-        <div id="outputPanel" class="outputPanel">
-          <h3 style="position: absolute; right: 20px; top: -15px;">
-            <label style="cursor: pointer;" onclick="hideOutputPanel()">X</label>
-          </h3>
-          <textarea id="outputTextarea" title="Output" class="outputTextarea"></textarea>
-        </div>
-        <h2 class="project-tagline"></h2>
-      </div>
-    </section>
-  <body>
-    <script type="text/javascript">
-      var baseURL = "https://wiki-link-validator-chipchaderez.c9users.io:8081";
-      var gitRepo = "https://github.com/oVirt/ovirt-site";
-      var interval;
-      var timestamp;
-
-      function call_wiki_links() {
-        var outputPanel = document.getElementById('outputPanel');
-        outputPanel.style.display = 'block';
-        var outputTextarea = document.getElementById('outputTextarea');
-        outputTextarea.value = "Scanning...";
-
-        gitRepo = document.getElementById('git_repo').value || gitRepo;
-        gitRepo = btoa(gitRepo);
-        timestamp = Date.now();
-
-        var xmlhttp = new XMLHttpRequest();
-        var url = baseURL + "/validate/" + gitRepo + "?timestamp=" + timestamp;
-        xmlhttp.onreadystatechange = function() {
-          if (xmlhttp.readyState == 4) {
-            clearInterval(interval);
-            startInterval();
+  function startInterval() {
+    interval = setInterval(function() {
+      var xmlhttp = new XMLHttpRequest();
+      var url = baseURL + "/log/" + gitRepo + "?timestamp=" + timestamp;
+      xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status != 0) {
+          if (xmlhttp.status != 200) {
+            outputTextarea.value = "Error: " + xmlhttp.responseText;
           }
-        };
-        xmlhttp.open("GET", url, true);
-        xmlhttp.send();
-      }
+          if (xmlhttp.responseText == "") {
+            outputTextarea.value += ".";
+          } else {
+            outputTextarea.value = xmlhttp.responseText;
+          }
+        }
+      };
+      xmlhttp.open("GET", url, true);
+      xmlhttp.send();
+    }, 1000);
+  }
 
-      function startInterval() {
-        interval = setInterval(function() {
-          var xmlhttp = new XMLHttpRequest();
-          var url = baseURL + "/log/" + gitRepo + "?timestamp=" + timestamp;
-          xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState == 4) {
-              var outputTextarea = document.getElementById('outputTextarea');
-              if (xmlhttp.responseText == "") {
-                outputTextarea.value += ".";
-              } else {
-                outputTextarea.value = xmlhttp.responseText;
-              }
-            }
-          };
-          xmlhttp.open("GET", url, true);
-          xmlhttp.send();
-        }, 1000);
-      }
+  function hideOutputPanel() {
+    outputPanel.style.display = 'none';
+    scanButton.disabled = false;
+    clearInterval(interval);
+  }
+</script>
+<section class="main-content">
+  <h3>
+    <a id="welcome-to-wiki-links-validator-page" class="anchor" href="#welcome-to-wiki-links-validator-page" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to Wiki Links Validator Page.</h3>
+  A python tool, designed for validate URLs as part of your wiki content, that is managed in a git repository.<BR/>
+  One of the most annoying things you might encounter while going over a wiki page, is to find out a link in it redirects you to a missing page (404).<BR/><BR/>
 
-      function hideOutputPanel() {
-        var outputPanel = document.getElementById('outputPanel');
-        outputPanel.style.display = 'none';
-      }
-    </script>
-    <section class="main-content">
-      <h3>
-<a id="welcome-to-wiki-links-validator-page" class="anchor" href="#welcome-to-wiki-links-validator-page" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to Wiki Links Validator Page.</h3>
-A python tool, designed for validate URLs as part of your wiki content, that is managed in a git repository.<BR/>
-One of the most annoying things you might encounter while going over a wiki page, is to find out a link in it redirects you to a missing page (404).<BR/><BR/>
+  Wiki Validator scans all the files matching prefix *.html.md, and searches, using regex, for a specific pattern in the text that contains a link.<BR/>
+  Once a link has been found it validates it and prints the commit which introduced it.</p>
+  Try it out now!
+  <BR/>
 
-Wiki Validator scans all the files matching prefix *.html.md, and searches, using regex, for a specific pattern in the text that contains a link.<BR/>
-Once a link has been found it validates it and prints the commit which introduced it.</p>
-Try it out now!
-<BR/>
+  <h3>
+    <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+  <p>In 2016 Maor Lipchuk (<a href="https://github.com/maorlipchuk" class="user-mention">@maorlipchuk</a>), Daniel Erez (<a href="https://github.com/danielerez" class="user-mention">@danielerez</a>).</p>
 
-<p>In 2016 Maor Lipchuk (<a href="https://github.com/maorlipchuk" class="user-mention">@maorlipchuk</a>), Daniel Erez (<a href="https://github.com/danielerez" class="user-mention">@danielerez</a>).</p>
+  <h3>
+    <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<h3>
-<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
+  <p>Please feel free to contact Maor Lipchuk (<a href="https://github.com/maorlipchuk" class="user-mention">@maorlipchuk</a>), Daniel Erez (<a href="https://github.com/danielerez" class="user-mention">@danielerez</a>).</p>
 
-<p>Please feel free to contact Maor Lipchuk (<a href="https://github.com/maorlipchuk" class="user-mention">@maorlipchuk</a>), Daniel Erez (<a href="https://github.com/danielerez" class="user-mention">@danielerez</a>).</p>
+  <footer class="site-footer">
+    <span class="site-footer-owner"><a href="https://github.com/chipchaderez/WikiLinksValidator">Wikilinksvalidator</a> is maintained by <a href="https://github.com/chipchaderez">chipchaderez</a>.</span>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/chipchaderez/WikiLinksValidator">Wikilinksvalidator</a> is maintained by <a href="https://github.com/chipchaderez">chipchaderez</a>.</span>
+    <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+  </footer>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+</section>
 
-    </section>
 
-  
-  </body>
+</body>
 </html>
