@@ -28,8 +28,8 @@ class ValidateWikiLinks():
         self.home_dir = (home_dir if home_dir
                          else configParser.get(
                              'wiki-links-validator', 'HOME_DIR'))
-        self.file_prefix = configParser.get(
-            'wiki-links-validator', 'FILE_PREFIX')
+        self.file_suffix = configParser.get(
+            'wiki-links-validator', 'FILE_SUFFIX')
         http_pattern = configParser.get(
             'wiki-links-validator', 'HTTP_PATTERN')
         http_pattern2 = configParser.get(
@@ -60,20 +60,20 @@ class ValidateWikiLinks():
         # Config logs.
         self._config_logs()
 
-        # Gather all files with file_prefix in matches.
+        # Gather all files with file_suffix in matches.
         matches = []
-        self.scan_files(matches, self.home_dir, self.file_prefix, self.log)
+        self.scan_files(matches, self.home_dir, self.file_suffix, self.log)
         self.files_scanned = 0
 
         # For each file check the URL.
         map(self.file_crawler, matches)
 
-    def scan_files(self, matches, home_dir, file_prefix, log):
+    def scan_files(self, matches, home_dir, file_suffix, log):
         self.log.info('Scan directory %s for the follwing file types %s ' %
-                      (home_dir, file_prefix))
+                      (home_dir, file_suffix))
         self.qnt_files = 0
         for root, dirnames, filenames in os.walk(home_dir):
-            for filename in fnmatch.filter(filenames, file_prefix):
+            for filename in fnmatch.filter(filenames, file_suffix):
                 self.qnt_files += 1
                 self.log.debug('Match file: %s ' % filename)
                 matches.append(os.path.join(root, filename))
