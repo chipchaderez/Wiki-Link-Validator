@@ -81,7 +81,7 @@ class ValidateWikiLinks():
 
     def file_crawler(self, file_name):
         self.files_scanned += 1
-        source_file = file_name[len(self.home_dir):]
+        source_file = file_name[len(self.home_dir) + 1:]
         self.log.info('Crawl into: %s [%i/%i]' %
                       (source_file, self.files_scanned, self.qnt_files))
         for line_num, line in enumerate(open(file_name)):
