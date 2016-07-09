@@ -11,14 +11,17 @@ import sendMail
 import shlex
 import subprocess
 import sys
+import concurrent.futures
 from urlparse import urlparse
-
 
 class ValidateWikiLinks():
 
     def __init__(self, home_dir, should_send_mail, log_dir):
         self._init_conf(home_dir, should_send_mail, log_dir)
+        self.params_list = []
         self.validate_links()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+            executor.map(lambda p: self.validate_url(*p), self.params_list)
 
     def _init_conf(self, home_dir, should_send_mail, log_dir):
         # Get all configuration values
@@ -96,7 +99,7 @@ class ValidateWikiLinks():
             match = re.search(self.http_reg_pattern2, url)
             if match:
                 self.log.info('Found a match %s', match)
-                self.validate_url(match, line_num, line, source_file)
+                self.params_list.append([match, line_num, line, source_file])
 
     def validate_url(self, match, line_num, line, source_file):
         url = match.group(0)
