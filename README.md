@@ -11,6 +11,7 @@ Once a link has been found it validate it and print an appropriate log.
 
 ## SETUP
 * Make sure <i>python</i> and <i>git</i> are installed on your env.
+* Other packages that should be installed: python-futures
 * Clone the wiki git repo you want to scan, as so : `git clone git@github.com:{any wiki project}.git`  
   For example, this is how to clone ovirt-site:  
   ``` 
