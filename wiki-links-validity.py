@@ -12,6 +12,8 @@ import shlex
 import subprocess
 import sys
 import concurrent.futures
+from os.path import normpath
+
 from urlparse import urlparse
 
 class ValidateWikiLinks():
@@ -28,9 +30,9 @@ class ValidateWikiLinks():
         configParser = ConfigParser.RawConfigParser()
         configFilePath = 'conf/wiki.conf'
         configParser.read(configFilePath)
-        self.home_dir = (home_dir if home_dir
+        self.home_dir = normpath((home_dir if home_dir
                          else configParser.get(
-                             'wiki-links-validator', 'HOME_DIR'))
+                             'wiki-links-validator', 'HOME_DIR')))
         self.file_suffix = configParser.get(
             'wiki-links-validator', 'FILE_SUFFIX')
         http_pattern = configParser.get(
